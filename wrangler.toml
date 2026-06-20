@@ -1,0 +1,7 @@
+name = "smartrecruit"
+pages_build_output_dir = "dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "smartrecruit-db"
+database_id = "27a2d6b0-026c-4199-827c-2ab8c34cd4cb"
