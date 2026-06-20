@@ -100,17 +100,15 @@ export async function onRequestPut(context) {
   try {
     const { request } = context;
     const body = await request.json();
-    const { applicant_id, title, scheduled_at, duration_minutes, notes } = body;
-    
-    if (!applicant_id || !scheduled_at) {
-      return new Response(JSON.stringify({ error: "Applicant ID and Scheduled Date are required" }), {
+    const { id, stage, name, email, phone, resume_url, portfolio_url, cover_letter } = body;
+
+    if (!id) {
+      return new Response(JSON.stringify({ error: "Applicant ID is required" }), {
         status: 400,
         headers: { "Content-Type": "application/json" }
       });
     }
-    const interviewTitle = title || "Interview";
 
-    // Verify applicant exists
     const applicant = await context.env.DB.prepare("SELECT * FROM applicants WHERE id = ?").bind(id).first();
     if (!applicant) {
       return new Response(JSON.stringify({ error: "Applicant not found" }), {
@@ -119,45 +117,52 @@ export async function onRequestPut(context) {
       });
     }
 
-    const updatedStage = stage !== undefined ? stage : applicant.stage;
-    const updatedName = name !== undefined ? name : applicant.name;
-    const updatedEmail = email !== undefined ? email : applicant.email;
-    const updatedPhone = phone !== undefined ? phone : applicant.phone;
-    const updatedResume = resume_url !== undefined ? resume_url : applicant.resume_url;
-    const updatedPortfolio = portfolio_url !== undefined ? portfolio_url : applicant.portfolio_url;
-    const updatedCover = cover_letter !== undefined ? cover_letter : applicant.cover_letter;
+    const newStage = stage !== undefined ? stage : applicant.stage;
+    const newName = name !== undefined ? name : applicant.name;
+    const newEmail = email !== undefined ? email : applicant.email;
+    const newPhone = phone !== undefined ? phone : applicant.phone;
+    const newResume = resume_url !== undefined ? resume_url : applicant.resume_url;
+    const newPortfolio = portfolio_url !== undefined ? portfolio_url : applicant.portfolio_url;
+    const newCover = cover_letter !== undefined ? cover_letter : applicant.cover_letter;
     const now = new Date().toISOString();
 
-    await context.env.DB.prepare(
-      `UPDATE applicants SET 
-       stage = ?, name = ?, email = ?, phone = ?, resume_url = ?, portfolio_url = ?, cover_letter = ?, updated_at = ? 
-       WHERE id = ?`
-    ).bind(
-      updatedStage,
-      updatedName,
-      updatedEmail,
-      updatedPhone,
-      updatedResume,
-      updatedPortfolio,
-      updatedCover,
+    await context.env.DB.prepare(`
+      UPDATE applicants SET
+        stage = ?,
+        name = ?,
+        email = ?,
+        phone = ?,
+        resume_url = ?,
+        portfolio_url = ?,
+        cover_letter = ?,
+        updated_at = ?
+      WHERE id = ?
+    `).bind(
+      newStage,
+      newName,
+      newEmail,
+      newPhone,
+      newResume,
+      newPortfolio,
+      newCover,
       now,
       id
     ).run();
 
     const updatedApplicant = {
       ...applicant,
-      stage: updatedStage,
-      name: updatedName,
-      email: updatedEmail,
-      phone: updatedPhone,
-      resume_url: updatedResume,
-      portfolio_url: updatedPortfolio,
-      cover_letter: updatedCover,
+      stage: newStage,
+      name: newName,
+      email: newEmail,
+      phone: newPhone,
+      resume_url: newResume,
+      portfolio_url: newPortfolio,
+      cover_letter: newCover,
       updated_at: now
     };
 
     return new Response(JSON.stringify(updatedApplicant), {
-      headers: { 
+      headers: {
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*"
       }
