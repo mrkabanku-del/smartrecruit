@@ -105,6 +105,7 @@ export default function App() {
     }
   };
 
+  const handleCreateProject = async (projectData) => {
     try {
       const response = await fetch('/api/projects', {
         method: 'POST',
@@ -274,6 +275,7 @@ export default function App() {
             projects={projects} 
             applicants={applicants} 
             onCreateProject={handleCreateProject}
+            onDeleteProject={handleDeleteProject}
           />
         );
       case 'kanban':
